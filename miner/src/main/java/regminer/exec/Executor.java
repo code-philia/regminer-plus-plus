@@ -17,7 +17,8 @@ import java.util.Set;
 public class Executor {
 
     public final static String OS_WINDOWS = "windows";
-    public final static String OS_MAC = "mac";
+    public final static String OS_MAC = "mac";;
+
     public final static String OS_UNIX = "unix";
     protected static String OS;
     static ProcessBuilder pb = new ProcessBuilder();

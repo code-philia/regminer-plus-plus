@@ -5,10 +5,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Properties;
 
-public class ConfigLoader {
+public class EnvConfigLoader {
     //base_repo_path here is the root module path of the file which invoked this class!
     //eg: a class in miner module invoked this class, then base_repo_path is the root path of miner module, the env.properties file should be in the root path of miner module
     private static final String BASE_REPO_PATH = System.getProperty("user.dir");

@@ -61,7 +61,7 @@ public class AutoCompileAndTest extends CtStrategy {
         scanner.scan();
         String[] files = scanner.getIncludedFiles();
         for (String file: files){
-            if(file.contains("maven-wrapper.properties")){
+            if (file.contains("maven-wrapper.properties")){
                 buildTool = Compiler.MVNW;
                 break;
             } else if(file.contains("gradle-wrapper.properties")){

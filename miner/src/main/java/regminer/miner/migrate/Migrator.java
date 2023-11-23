@@ -38,7 +38,7 @@ public class Migrator {
         }
     }
 
-    public String findJavaFile( String className, String[] projectJavaFiles) {
+    public String findJavaFile(String className, String[] projectJavaFiles) {
         String path = className.replace(".", File.separator) + ".java";
         for (String file : projectJavaFiles) {
             if (file.contains(path)) {
@@ -48,7 +48,7 @@ public class Migrator {
         return null;
     }
 
-    public String findClassFile( String className,  String[] projectJavaFiles) {
+    public String findClassFile(String className,  String[] projectJavaFiles) {
         String path = className.replace(".", File.separator) + ".class";
         for (String file : projectJavaFiles) {
             if (file.contains(path)) {

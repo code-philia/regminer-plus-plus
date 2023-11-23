@@ -13,8 +13,8 @@ public class CompileTest {
 
     @Test
     public void testBaseCompile() {
-        ConfigLoader.setConfigPath("/Users/zhjlu/codes/graduate/RegMiner/miner/miner.properties");// set to your own properties path!
-        ConfigLoader.refresh();
+        EnvConfigLoader.setConfigPath("/Users/zhjlu/codes/graduate/RegMiner/miner/miner.properties");// set to your own properties path!
+        EnvConfigLoader.refresh();
         ProjectBuilder projectBuilder = new ProjectBuilder();
         projectBuilder.setProjectDir(new File("/Users/zhjlu/codes/graduate/miner-space/jackson-core/jackson-core_manual"));
         CompileResult result = projectBuilder.compile();
@@ -23,8 +23,8 @@ public class CompileTest {
 
     @Test
     public void testAutoCompile() {
-        ConfigLoader.setConfigPath("/Users/zhjlu/codes/graduate/RegMiner/miner/miner.properties");// set to your own properties path!
-        ConfigLoader.refresh();
+        EnvConfigLoader.setConfigPath("/Users/zhjlu/codes/graduate/RegMiner/miner/miner.properties");// set to your own properties path!
+        EnvConfigLoader.refresh();
         ProjectBuilder projectBuilder = new ProjectBuilder(
                 new File("/Users/zhjlu/codes/graduate/miner-space/jackson-core/jackson-core_manual"),
                 new CtContext(new AutoCompileAndTest()));
