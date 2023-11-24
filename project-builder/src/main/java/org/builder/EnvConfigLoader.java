@@ -10,8 +10,10 @@ import java.util.Properties;
 public class EnvConfigLoader {
     //base_repo_path here is the root module path of the file which invoked this class!
     //eg: a class in miner module invoked this class, then base_repo_path is the root path of miner module, the env.properties file should be in the root path of miner module
-    private static final String BASE_REPO_PATH = System.getProperty("user.dir");
-    private static final String SEPARATOR = System.getProperty("file.separator");
+    private EnvConfigLoader() {}
+
+    public static final String BASE_REPO_PATH = System.getProperty("user.dir");
+    public static final String SEPARATOR = System.getProperty("file.separator");
     private static final Properties prop = new Properties();
     private static String CONFIGPATH = "env.properties";
     private final static String JDK_DIR = "jdk_dir";
@@ -42,8 +44,33 @@ public class EnvConfigLoader {
     public static String j16File = "";
     public static String j17File = "";
 
+    public static String testProjectDir = "";
+
     public static void setConfigPath(String path) {
         CONFIGPATH = path;
+    }
+
+    public static String getModuleAbsDir(String moduleName) {
+        String moduleDir = BASE_REPO_PATH;
+        String[] split = moduleDir.split(SEPARATOR);
+        boolean lastIsModuleName = split[split.length - 1].equals(moduleName);
+        boolean secondLastIsProjectName = split[split.length - 2].equals("RegMiner");
+
+        if (lastIsModuleName && secondLastIsProjectName) {
+            return moduleDir;
+        }
+
+        if (!lastIsModuleName && secondLastIsProjectName) {
+            //change the last one to moduleName
+            //eg:  /Users/zhjlu/codes/graduate/RegMiner/miner -> /Users/zhjlu/codes/graduate/RegMiner/project-builder
+            split[split.length - 1] = moduleName;
+            return String.join(SEPARATOR, split);
+        }
+
+        if (split[split.length - 1].equals("RegMiner")) {
+            moduleDir += SEPARATOR + moduleName;
+        }
+        return moduleDir;
     }
 
     public static void refresh() {
@@ -56,8 +83,7 @@ public class EnvConfigLoader {
         try (InputStream inStream = Files.newInputStream(Paths.get(CONFIGPATH))) {
             prop.load(inStream);
         } catch (IOException ex) {
-            System.out.println(ex.getMessage());
-            System.out.println("refresh error here!");
+            System.out.println("refresh error here: " + ex.getMessage());
         }
 
         jdkDir = prop.getProperty(JDK_DIR);
@@ -73,7 +99,7 @@ public class EnvConfigLoader {
         j15File = jdkDir + prop.getProperty(JDK15) + jdkHome;
         j16File = jdkDir + prop.getProperty(JDK16) + jdkHome;
         j17File = jdkDir + prop.getProperty(JDK17) + jdkHome;
-
+        testProjectDir = prop.getProperty("test_project_dir");
     }
 
 }

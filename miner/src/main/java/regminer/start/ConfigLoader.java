@@ -19,6 +19,8 @@ import java.util.Properties;
  * @author knightsong
  */
 public class ConfigLoader {
+
+    private ConfigLoader() {}
     private final static String PROJRCT_NAME = "project_name";
     private final static String ROOT_DIR = "root_dir";
     private static final Properties prop = new Properties();
@@ -45,10 +47,35 @@ public class ConfigLoader {
     public static String testSymbol = "";
     public static boolean code_cover = false;
     public static boolean auto_compile = false;
+
+    public static final String SEPARATOR = System.getProperty("file.separator");
+
     private static String JAVA_HONE = "";
 
     public static void setConfigPath(String path){
         CONFIGPATH = path;
+    }
+
+    public static String getModuleAbsDir(String moduleName) {
+        String moduleDir = System.getProperty("user.dir");
+        String[] split = moduleDir.split(SEPARATOR);
+        boolean lastIsModuleName = split[split.length - 1].equals(moduleName);
+        boolean secondLastIsProjectName = split[split.length - 2].equals("RegMiner");
+
+        if (lastIsModuleName && secondLastIsProjectName) {
+            return moduleDir;
+        }
+
+        if (!lastIsModuleName && secondLastIsProjectName) {
+            //change the last one to moduleName
+            split[split.length - 1] = moduleName;
+            return String.join(SEPARATOR, split);
+        }
+
+        if (split[split.length - 1].equals("RegMiner")) {
+            moduleDir += SEPARATOR + moduleName;
+        }
+        return moduleDir;
     }
 
     public static void refresh() {

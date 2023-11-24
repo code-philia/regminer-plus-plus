@@ -15,12 +15,14 @@ import java.io.File;
 
 public class CompileProject {//This java file is used to compile all commits of a given project
 
-    public static void main(String[] args) throws Exception {
-        EnvConfigLoader.setConfigPath("/Users/zhjlu/codes/graduate/RegMiner/miner/miner.properties");// set to your own properties path!
+    public static void main(String[] args) throws Exception {//前63个有60个
+        String moduleDir = ConfigLoader.getModuleAbsDir("miner");
+        System.out.println(moduleDir);
+        EnvConfigLoader.setConfigPath(moduleDir + ConfigLoader.SEPARATOR + "miner.properties");// set to your own properties path!
         EnvConfigLoader.refresh();
-        ProjectBuilder projectBuilder = new ProjectBuilder();
+        ProjectBuilder projectBuilder = new ProjectBuilder();//use BaseCompileAndTest strategy
 
-        ConfigLoader.setConfigPath("/Users/zhjlu/codes/graduate/RegMiner/miner/env.properties");
+        ConfigLoader.setConfigPath(moduleDir + ConfigLoader.SEPARATOR + "env.properties");
         ConfigLoader.refresh();
         Repository repo = new Provider().create(Provider.EXISITING).get(Conf.LOCAL_PROJECT_GIT);
         Git git = new Git(repo);
@@ -31,12 +33,6 @@ public class CompileProject {//This java file is used to compile all commits of 
         int successCnt = 0;
         for (RevCommit commit : commits) {
             commitCnt++;
-            if (commitCnt < 64) {
-                continue;
-            }
-            if (commitCnt > 70) {
-                break;
-            }
             String commitId = commit.getName();
             File checkedOutDir = evaluator.checkout(commitId, commitId, "commit");
             projectBuilder.setProjectDir(checkedOutDir);
@@ -45,10 +41,9 @@ public class CompileProject {//This java file is used to compile all commits of 
 
             if (result.getState() == CompileResult.CompileState.SUCCESS) {
                 successCnt++;
-            } else {
-                System.out.println(result.getState() + ": " + commitId);
-                FileUtilx.log(result.getState() + ": " + commitId);
             }
+            System.out.println(result.getState() + ": " + commitId);
+            FileUtilx.log(result.getState() + ": " + commitId);
             System.out.println("Now: " + successCnt + " of " + commitCnt);
             FileUtilx.log("Now: " + successCnt + " of " + commitCnt);
         }

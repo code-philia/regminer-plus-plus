@@ -13,20 +13,23 @@ public class CompileTest {
 
     @Test
     public void testBaseCompile() {
-        EnvConfigLoader.setConfigPath("/Users/zhjlu/codes/graduate/RegMiner/miner/miner.properties");// set to your own properties path!
+        //The config file is in the miner module
+        String moduleDir = EnvConfigLoader.getModuleAbsDir("miner");
+        EnvConfigLoader.setConfigPath(moduleDir + EnvConfigLoader.SEPARATOR + "miner.properties");// set to your own properties path!
         EnvConfigLoader.refresh();
         ProjectBuilder projectBuilder = new ProjectBuilder();
-        projectBuilder.setProjectDir(new File("/Users/zhjlu/codes/graduate/miner-space/jackson-core/jackson-core_manual"));
+        projectBuilder.setProjectDir(new File(EnvConfigLoader.testProjectDir));
         CompileResult result = projectBuilder.compile();
         Assert.assertEquals(CompileResult.CompileState.SUCCESS, result.getState());
     }
 
     @Test
     public void testAutoCompile() {
-        EnvConfigLoader.setConfigPath("/Users/zhjlu/codes/graduate/RegMiner/miner/miner.properties");// set to your own properties path!
+        String moduleDir = EnvConfigLoader.getModuleAbsDir("miner");
+        EnvConfigLoader.setConfigPath(moduleDir + EnvConfigLoader.SEPARATOR + "miner.properties");// set to your own properties path!
         EnvConfigLoader.refresh();
         ProjectBuilder projectBuilder = new ProjectBuilder(
-                new File("/Users/zhjlu/codes/graduate/miner-space/jackson-core/jackson-core_manual"),
+                new File(EnvConfigLoader.testProjectDir),
                 new CtContext(new AutoCompileAndTest()));
         CompileResult result = projectBuilder.compile();
         Assert.assertEquals(CompileResult.CompileState.SUCCESS, result.getState());
