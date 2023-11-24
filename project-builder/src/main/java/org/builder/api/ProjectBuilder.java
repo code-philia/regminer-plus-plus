@@ -19,10 +19,9 @@ public class ProjectBuilder extends AbstractProjectBuilder {
 //        ctContext= new CtContext(new AutoCompileAndTest());
     }
 
-    public ProjectBuilder(CtContext ctContext, File projectDir) {
+    public ProjectBuilder(CtStrategy strategy) {
         super();
-        this.ctContext = ctContext;
-        this.projectDir = projectDir;
+        this.ctContext = new CtContext(strategy);
     }
 
     public ProjectBuilder(File projectDir) {

@@ -92,6 +92,7 @@ public class Executor {
             }
             execResult.setUsageTime(System.currentTimeMillis()-startTime);
             execResult.setMessage(builder.toString());
+            System.out.println(builder);
         }
         return execResult;
     }

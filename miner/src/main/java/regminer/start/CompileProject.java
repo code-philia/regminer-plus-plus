@@ -15,7 +15,7 @@ import java.io.File;
 
 public class CompileProject {//This java file is used to compile all commits of a given project
 
-    public static void main(String[] args) throws Exception {//前63个有60个
+    public static void main(String[] args) throws Exception {
         String moduleDir = ConfigLoader.getModuleAbsDir("miner");
         System.out.println(moduleDir);
         EnvConfigLoader.setConfigPath(moduleDir + ConfigLoader.SEPARATOR + "miner.properties");// set to your own properties path!

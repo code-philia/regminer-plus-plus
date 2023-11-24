@@ -21,6 +21,7 @@ public class MinerSingleFilter {
     }
 
     public void prepare() throws Exception {
+        ConfigLoader.setConfigPath(ConfigLoader.getModuleAbsDir("miner") + ConfigLoader.SEPARATOR + "env.properties");
         ConfigLoader.refresh();
         Miner.repo = new Provider().create(Provider.EXISITING).get(Conf.LOCAL_PROJECT_GIT);
         Miner.git = new Git(Miner.repo);
@@ -28,7 +29,7 @@ public class MinerSingleFilter {
 
     public void handleSingleTask() throws Exception {
         List<String> filter = new ArrayList<>();
-        filter.add("3baa7d6742f7460bfb0af8edf48bf1575658109a");
+        filter.add("e48cdc83ebda8439b0544b7ddbc4f16f2624c3ab");
         PotentialBFCDetector pBFCDetector = new PotentialBFCDetector(Miner.repo, Miner.git);
         Miner.pRFCs = null;
         Miner.pRFCs = pBFCDetector.detectPotentialBFC(filter);

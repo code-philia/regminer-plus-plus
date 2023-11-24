@@ -1,5 +1,6 @@
 package regminer.start;
 
+import org.builder.api.AutoCompileAndTest;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Repository;
 import regminer.constant.Conf;
@@ -61,7 +62,7 @@ public class Miner {
 
         // 工具类准备,1)测试方法查找 2)测试用例确定 3)BIC查找
 //        RelatedTestCaseParser rTCParser = new RelatedTestCaseParser();
-        BFCEvaluator tm = new BFCEvaluator(repo);
+        BFCEvaluator tm = new BFCEvaluator(repo, new AutoCompileAndTest());
         BICFinder finder = new BICFinder();
         System.out.println("origin bfc count: " + pRFCs.size());
 

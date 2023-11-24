@@ -31,6 +31,7 @@ public class AutoCompileAndTest extends CtStrategy {
         for (JDK jdk : JDK.values()) {
             envCommands.takeCommand(EnvCommands.CommandKey.JDK, jdk.getCommand());
             envCommands.takeCommand(EnvCommands.CommandKey.COMPILE, compileCommand);
+            System.out.println(envCommands.compute());
             message = new Executor(osType).setDirectory(projectDir).exec(envCommands.compute()).getMessage();
             compileState = CtReferees.JudgeCompileState(message);
             if (compileState == CompileResult.CompileState.SUCCESS){

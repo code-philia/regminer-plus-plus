@@ -1,6 +1,10 @@
 package regminer.miner.migrate;
 
 import org.apache.commons.io.FileUtils;
+import org.builder.EnvConfigLoader;
+import org.builder.api.CtStrategy;
+import org.builder.api.ProjectBuilder;
+import org.builder.model.CompileResult;
 import org.eclipse.jdt.core.dom.*;
 import org.eclipse.jgit.lib.Repository;
 import org.jetbrains.annotations.NotNull;
@@ -16,6 +20,7 @@ import regminer.model.MigrateItem.MigrateFailureType;
 import regminer.model.PotentialRFC;
 import regminer.model.RelatedTestCase;
 import regminer.model.TestFile;
+import regminer.start.ConfigLoader;
 import regminer.utils.CompilationUtil;
 import regminer.utils.FileUtilx;
 
@@ -32,9 +37,20 @@ public class BFCEvaluator extends Migrator {
     CodeCoverage codeCoverage = new CodeCoverage();
     BFCTracker tracker = new BFCTracker();
     RelatedTestCaseParser testCaseParser = new RelatedTestCaseParser();
+    ProjectBuilder projectBuilder;
 
     public BFCEvaluator(Repository repo) {
         this.repo = repo;
+        projectBuilder = new ProjectBuilder();
+        EnvConfigLoader.setConfigPath(ConfigLoader.getModuleAbsDir("miner") + ConfigLoader.SEPARATOR + "miner.properties");
+        EnvConfigLoader.refresh();
+    }
+
+    public BFCEvaluator(Repository repo, CtStrategy strategy) {
+        this.repo = repo;
+        projectBuilder = new ProjectBuilder(strategy);
+        EnvConfigLoader.setConfigPath(ConfigLoader.getModuleAbsDir("miner") + ConfigLoader.SEPARATOR + "miner.properties");
+        EnvConfigLoader.refresh();
     }
 
     /**
@@ -97,7 +113,10 @@ public class BFCEvaluator extends Migrator {
             copyToTarget(pRFC, bfcpDirectory);
 
             // 4.compile BFC
-            if (!compile(bfcDirectory, false)) {
+//            if (!compile(bfcDirectory, false)) {
+            projectBuilder.setProjectDir(bfcDirectory);
+            CompileResult compileResult = projectBuilder.compile();
+            if (compileResult.getState() != CompileResult.CompileState.SUCCESS) {
                 pRFC.getTestCaseFiles().clear();
                 FileUtilx.log("BFC compile error");
                 emptyCache(bfcID);
@@ -105,9 +124,7 @@ public class BFCEvaluator extends Migrator {
             }
 
             // 5. 测试BFC中的每一个待测试方法
-//            System.out.println("before testing, bfcp test case size:" + pRFC.getTestCaseFiles().size());
             testBFC(bfcDirectory, pRFC);
-//            System.out.println("after testing, bfcp test case size:" + pRFC.getTestCaseFiles().size());
 
             if (pRFC.getTestCaseFiles().isEmpty()) {
                 FileUtilx.log("BFC all test fal");
@@ -116,7 +133,10 @@ public class BFCEvaluator extends Migrator {
             }
 
             // 7.编译并测试BFCP
-            if (!compile(bfcpDirectory, false)) {
+            projectBuilder.setProjectDir(bfcpDirectory);
+            compileResult = projectBuilder.compile();
+//            if (!compile(bfcpDirectory, false)) {
+            if (compileResult.getState() != CompileResult.CompileState.SUCCESS) {
                 pRFC.getTestCaseFiles().clear();
                 FileUtilx.log("BFC~1 compile error");
                 emptyCache(bfcID);
@@ -190,10 +210,10 @@ public class BFCEvaluator extends Migrator {
         return tracker.regressionProbCalculate(tracker.handleTasks(coverNodeList, bfcDirectory));
     }
 
-    public boolean compile(File file, boolean record) {
-        exec.setDirectory(file);
-        return exec.execBuildWithResult(Conf.compileLine, record);
-    }
+//    public boolean compile(File file, boolean record) {
+//        exec.setDirectory(file);
+//        return exec.execBuildWithResult(Conf.compileLine, record);
+//    }
 
     public void testBFC(File file, PotentialRFC pRFC) throws Exception {
         // 一定要先设置当前文件路径

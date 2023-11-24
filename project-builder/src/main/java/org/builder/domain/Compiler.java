@@ -4,7 +4,7 @@ public enum Compiler {
     MVN {
         @Override
         public String getCompileCommand(String osVersion) {
-            return "mvn compile test-compile";
+            return "mvn clean;mvn compile test-compile";
         }
 
         @Override
