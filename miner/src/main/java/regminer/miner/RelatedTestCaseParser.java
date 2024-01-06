@@ -67,7 +67,7 @@ public class RelatedTestCaseParser  {
                 continue;
             }
             if (!isTestSuite(code)) {
-//                System.out.println("remove here!");
+//                System.out.println("remove here!");F
                 file.setType(Type.TEST_RELATE);
                 pRFC.getTestRelates().add(file);
                 iterator.remove();

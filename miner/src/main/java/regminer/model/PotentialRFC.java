@@ -17,6 +17,7 @@ public class PotentialRFC {
     private Double score;
     public final static int TESTCASE_FROM_SELF = 0;
     public final static int TESTCASE_FROM_SEARCH =1;
+    public final static int TESTCASE_FROM_DIFF_TEST =2;
 
     private List<NormalFile> normalJavaFiles; //which contains fix path
     private List<TestFile> testCaseFiles;    // All File Under test dir
