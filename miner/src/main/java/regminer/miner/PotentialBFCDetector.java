@@ -10,14 +10,12 @@ import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.patch.FileHeader;
 import org.eclipse.jgit.patch.HunkHeader;
-import org.eclipse.jgit.patch.Patch;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
 import regminer.constant.Conf;
 import regminer.constant.Constant;
-import regminer.constant.Priority;
 import regminer.model.*;
 import regminer.utils.FileUtilx;
 import regminer.utils.GitUtil;
@@ -27,137 +25,10 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-public class PotentialBFCDetector {
-
-    private Repository repo;
-    private Git git;
-
+public class PotentialBFCDetector extends BfcDetector {
 
     public PotentialBFCDetector(Repository repo, Git git) {
-        this.repo = repo;
-        this.git = git;
-    }
-
-    public void setRepo(Repository repo) {
-        this.repo = repo;
-    }
-
-    public void setGit(Git git) {
-        this.git = git;
-    }
-
-    public List<PotentialRFC> detectPotentialBFC() throws Exception {
-        // 获取所有的commit，我们需要对所有的commit进行分析
-        Iterable<RevCommit> commits = git.log().all().call();
-        // 开始迭代每一个commit
-        return detectAll(commits);
-    }
-
-    public List<PotentialRFC> detectPotentialBFC(List<String> commitsFilter) throws Exception {
-        // 获取所有的commit，我们需要对所有的commit进行分析
-        Iterable<RevCommit> commits = git.log().all().call();
-        List<PotentialRFC> potentialRFCS = detectOnFilter(commitsFilter, commits);
-        return potentialRFCS;
-    }
-
-    private List<PotentialRFC> detectAll(Iterable<RevCommit> commits) throws Exception {
-        List<PotentialRFC> potentialRFCs = new LinkedList<PotentialRFC>();
-        // 定义需要记录的实验数据
-        int countAll = 0;
-        // 开始迭代每一个commit
-        for (RevCommit commit : commits) {
-            detect(commit, potentialRFCs);
-            countAll++;
-        }
-        FileUtilx.log("总共分析了" + countAll + "条commit\n");
-        FileUtilx.log("pRFC in total :" + potentialRFCs.size());
-        return potentialRFCs;
-    }
-
-    private List<PotentialRFC> detectOnFilter(List<String> commitsFilter, Iterable<RevCommit> commits) throws Exception {
-        List<PotentialRFC> potentialRFCs = new LinkedList<PotentialRFC>();
-        // 定义需要记录的实验数据
-        int countAll = 0;
-        // 开始迭代每一个commit
-        for (RevCommit commit : commits) {
-            if (commitsFilter.contains(commit.getName())) {
-                detect(commit, potentialRFCs);
-                countAll++;
-            }
-        }
-        FileUtilx.log("总共分析了" + countAll + "条commit\n");
-        FileUtilx.log("pRFC in total :" + potentialRFCs.size());
-        return potentialRFCs;
-    }
-
-    /**
-     * 获取与父亲的差别
-     *
-     * @param commit
-     * @return
-     * @throws Exception
-     */
-    private List<ChangedFile> getLastDiffFiles(RevCommit commit) throws Exception {
-        List<ChangedFile> files = new LinkedList<>();
-        ObjectId id = commit.getTree().getId();
-        ObjectId oldId = null;
-        if (commit.getParentCount() > 0) {
-            oldId = commit.getParent(0).getTree().getId();
-        } else {
-            return null;
-        }
-        try (ObjectReader reader = repo.newObjectReader()) {
-            CanonicalTreeParser oldTreeIter = new CanonicalTreeParser();
-            oldTreeIter.reset(reader, oldId);
-            CanonicalTreeParser newTreeIter = new CanonicalTreeParser();
-            newTreeIter.reset(reader, id);
-            // finally get the list of changed files
-            List<DiffEntry> diffs = git.diff().setNewTree(newTreeIter).setOldTree(oldTreeIter).call();
-            for (DiffEntry entry : diffs) {
-                getChangedFile(entry, files);
-            }
-        }
-        return files;
-    }
-
-    private List<Edit> getEdits(DiffEntry entry) throws Exception {
-        List<Edit> result = new LinkedList<Edit>();
-        try (DiffFormatter diffFormatter = new DiffFormatter(DisabledOutputStream.INSTANCE)) {
-            diffFormatter.setRepository(repo);
-            FileHeader fileHeader = diffFormatter.toFileHeader(entry);
-            List<? extends HunkHeader> hunkHeaders = fileHeader.getHunks();
-            for (HunkHeader hunk : hunkHeaders) {
-                result.addAll(hunk.toEditList());
-            }
-        }
-        return result;
-
-    }
-
-    /**
-     * 任意两个diff之间的文件路径差别
-     *
-     * @param oldCommit
-     * @param newCommit
-     * @return
-     * @throws Exception
-     */
-    private List<ChangedFile> getDiffFiles(RevCommit oldCommit, RevCommit newCommit) throws Exception {
-        List<ChangedFile> files = new LinkedList<>();
-        ObjectId id = newCommit.getTree().getId();
-        ObjectId oldId = oldCommit.getTree().getId();
-        try (ObjectReader reader = repo.newObjectReader()) {
-            CanonicalTreeParser oldTreeIter = new CanonicalTreeParser();
-            oldTreeIter.reset(reader, oldId);
-            CanonicalTreeParser newTreeIter = new CanonicalTreeParser();
-            newTreeIter.reset(reader, id);
-            // finally get the list of changed files
-            List<DiffEntry> diffs = git.diff().setNewTree(newTreeIter).setOldTree(oldTreeIter).call();
-            for (DiffEntry entry : diffs) {
-                getChangedFile(entry, files);
-            }
-        }
-        return files;
+        super(repo, git);
     }
 
     /**
@@ -182,52 +53,8 @@ public class PotentialBFCDetector {
         return (num == 0 && num_1>0);
     }
 
-    /**
-     * 获取所有测试用例文件
-     *
-     * @param files
-     * @return
-     */
-    private List<TestFile> getTestFiles(List<ChangedFile> files) {
-        List<TestFile> testFiles = new LinkedList<>();
-        if (files == null) {
-            return testFiles;
-        }
-        for (ChangedFile file : files) {
-            if (file instanceof TestFile) {
-                testFiles.add((TestFile) file);
-            }
-        }
-        return testFiles;
-    }
-
-    /**
-     * 获取所有普通文件
-     */
-    private List<NormalFile> getNormalJavaFiles(List<ChangedFile> files) {
-        List<NormalFile> normalJavaFiles = new LinkedList<>();
-        for (ChangedFile file : files) {
-            if (file instanceof NormalFile) {
-                normalJavaFiles.add((NormalFile) file);
-            }
-        }
-        return normalJavaFiles;
-    }
-
-    private List<SourceFile> getSourceFiles(List<ChangedFile> files) {
-        List<SourceFile> sourceFiles = new LinkedList<>();
-        for (ChangedFile file : files) {
-            if (file.getNewPath().contains("pom.xml") || file.getNewPath().equals(Constant.NONE_PATH)) {
-                continue;
-            }
-            if (file instanceof SourceFile) {
-                sourceFiles.add((SourceFile) file);
-            }
-        }
-        return sourceFiles;
-    }
-
-    private void getChangedFile(DiffEntry entry, List<ChangedFile> files) throws Exception {
+    @Override
+    void getChangedFile(DiffEntry entry, List<ChangedFile> files) throws Exception {
         String path = entry.getNewPath();
         if (path.contains("test") && path.endsWith(".java")) {
             ChangedFile file = new TestFile(entry.getNewPath());
@@ -251,40 +78,26 @@ public class PotentialBFCDetector {
         }
     }
 
-    /**
-     * 判断全部都是普通的Java文件
-     *
-     * @param files
-     * @return
-     */
-    private boolean justNormalJavaFile(List<ChangedFile> files) {
-        for (ChangedFile file : files) {
-            String str = file.getNewPath().toLowerCase();
-            // 如果有一个文件路径中不包含test
-            // 便立即返回false
-            if (str.contains("test")) {
-                return false;
-            }
-        }
-        return true;
-    }
 
     /**
      * @param commit
      * @param potentialRFCs
      * @throws Exception
      */
-    private void detect(RevCommit commit, List<PotentialRFC> potentialRFCs) throws Exception {
+    @Override
+    void detect(RevCommit commit, List<PotentialRFC> potentialRFCs) throws Exception {
         // 1)首先我们将记录所有的标题中包含fix的commti
         String message1 = commit.getFullMessage().toLowerCase();
-//        if (message1.contains("fix") || message1.contains("close")) {
-        if (true) {
+        if (message1.contains("fix") || message1.contains("close")) {
             // 针对标题包含fix的commit我们进一步分析本次提交修改的文件路径
             List<ChangedFile> files = getLastDiffFiles(commit);
-            if (files == null) return;
+            if (files == null) {
+                return;
+            }
             List<TestFile> testcaseFiles = getTestFiles(files);
             List<NormalFile> normalJavaFiles = getNormalJavaFiles(files);
             List<SourceFile> sourceFiles = getSourceFiles(files);
+
             // 1）若所有路径中存在任意一个路径包含test相关的Java文件则我们认为本次提交中包含测试用例。
             // 2）若所有路径中除了测试用例还包含其他的非测试用例的Java文件则commit符合条件
             if (testcaseFiles.size() > 0 && normalJavaFiles.size() > 0) {

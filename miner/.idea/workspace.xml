@@ -5,13 +5,34 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5961331d-9a17-4f11-b732-a65e2d2e6ea4" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../.idea/junitgenerator-prj-settings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../.idea/sonarlint/issuestore/index.pb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/junitgenerator-prj-settings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/uiDesigner.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/regminer/miner/BfcDetector.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../RegMiner.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../RegMiner.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/miner.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/miner.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../scripts/Automation.py" beforeDir="false" afterPath="$PROJECT_DIR$/../scripts/Automation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/regminer/miner/PotentialBFCDetector.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/regminer/miner/PotentialBFCDetector.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ComposerSettings">
+    <execution />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Interface" />
+        <option value="Class" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
@@ -20,7 +41,6 @@
     <option name="generalSettings">
       <MavenGeneralSettings>
         <option name="localRepository" value="$MAVEN_REPOSITORY$" />
-        <option name="mavenHome" value="$USER_HOME$/tool/apache-maven-3.8.3" />
       </MavenGeneralSettings>
     </option>
     <option name="importingSettings">
@@ -41,9 +61,20 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="TODO_SCOPE" value="All Places" />
     <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="aspect.path.notification.shown" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.detected.package.tslint" value="true" />
+    <property name="node.js.path.for.package.eslint" value="project" />
+    <property name="node.js.path.for.package.tslint" value="project" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="node.js.selected.package.tslint" value="(autodetect)" />
+    <property name="project.structure.last.edited" value="Project" />
+    <property name="project.structure.proportion" value="0.18454258" />
+    <property name="project.structure.side.proportion" value="0.2" />
     <property name="settings.editor.selected.configurable" value="MavenSettings" />
   </component>
   <component name="RecentsManager">
@@ -51,8 +82,11 @@
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/src" />
     </key>
+    <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
+      <recent name="regminer.miner" />
+    </key>
   </component>
-  <component name="RunManager" selected="Application.MinerFilter">
+  <component name="RunManager" selected="Application.Miner++">
     <configuration name="Miner" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="regminer.start.Miner" />
       <module name="miner" />
@@ -66,22 +100,45 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="MinerFilter" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="regminer.start.MinerFilter" />
+    <configuration name="Miner++" type="Application" factoryName="Application" temporary="true">
+      <option name="MAIN_CLASS_NAME" value="regminer.start.Miner" />
       <module name="miner" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="regminer.start.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="compile" type="MavenRunConfiguration" factoryName="Maven">
+      <MavenSettings>
+        <option name="myGeneralSettings" />
+        <option name="myRunnerSettings" />
+        <option name="myRunnerParameters">
+          <MavenRunnerParameters>
+            <option name="profiles">
+              <set />
+            </option>
+            <option name="goals">
+              <list>
+                <option value="compile" />
+              </list>
+            </option>
+            <option name="pomFileName" />
+            <option name="profilesMap">
+              <map />
+            </option>
+            <option name="resolveToWorkspace" value="false" />
+            <option name="workingDirPath" value="$PROJECT_DIR$" />
+          </MavenRunnerParameters>
+        </option>
+      </MavenSettings>
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Application.Miner++" />
+      <item itemvalue="Maven.compile" />
+    </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.MinerFilter" />
+        <item itemvalue="Application.Miner++" />
         <item itemvalue="Application.Miner" />
       </list>
     </recent_temporary>
@@ -102,6 +159,7 @@
       <workItem from="1661325455001" duration="537000" />
       <workItem from="1662445302678" duration="13000" />
       <workItem from="1662450463137" duration="46000" />
+      <workItem from="1704514773031" duration="4492000" />
     </task>
     <servers />
   </component>
