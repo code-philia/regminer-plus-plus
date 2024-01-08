@@ -73,34 +73,34 @@ public class Miner {
 
         Thread thread2 = new Thread(() -> {
             System.out.println("Bic mining is skipped now");
-//            while (!pRFCs.isEmpty() || !linkedQueue.isEmpty()) {
-//                if (!linkedQueue.isEmpty()) {
-//                    PotentialRFC pRfc = linkedQueue.poll();
-//                    FileUtilx.log("queue size:"+linkedQueue.size());
-//                    Regression regression = finder.searchBIC(pRfc);
-//                    if (regression == null) {
-//                        ProgressMonitor.addDone(pRfc.getCommit().getName());
-//                        continue;
-//                    }
-//                    StringBuilder sb = new StringBuilder();
-//                    sb.append(regression.getBugId()).append(",").append(regression.getBfcId())
-//                            .append(",").append(regression.getBuggyId())
-//                            .append(",").append(regression.getBicId())
-//                            .append(",").append(regression.getWorkId())
-//                            .append(",").append(regression.getTestCase())
-//                            .append(",").append(regression.getWithGap());
-//                    String regressionLog = sb.toString();
-//                    if (!setResult.contains(regressionLog)) {
-//                        FileUtilx.apendResult(regressionLog);
-//                    }
-//                    setResult.add(regressionLog);
-//                    if (Conf.sql_enable) {
-//                        regression.setProjectEntity(projectEntity);
-//                        bugStorage.saveBug(regression);
-//                    }
-//                    ProgressMonitor.addDone(pRfc.getCommit().getName());
-//                }
-//            }
+            while (!pRFCs.isEmpty() || !linkedQueue.isEmpty()) {
+                if (!linkedQueue.isEmpty()) {
+                    PotentialRFC pRfc = linkedQueue.poll();
+                    FileUtilx.log("queue size:"+linkedQueue.size());
+                    Regression regression = finder.searchBIC(pRfc);
+                    if (regression == null) {
+                        ProgressMonitor.addDone(pRfc.getCommit().getName());
+                        continue;
+                    }
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(regression.getBugId()).append(",").append(regression.getBfcId())
+                            .append(",").append(regression.getBuggyId())
+                            .append(",").append(regression.getBicId())
+                            .append(",").append(regression.getWorkId())
+                            .append(",").append(regression.getTestCase())
+                            .append(",").append(regression.getWithGap());
+                    String regressionLog = sb.toString();
+                    if (!setResult.contains(regressionLog)) {
+                        FileUtilx.apendResult(regressionLog);
+                    }
+                    setResult.add(regressionLog);
+                    if (Conf.sql_enable) {
+                        regression.setProjectEntity(projectEntity);
+                        bugStorage.saveBug(regression);
+                    }
+                    ProgressMonitor.addDone(pRfc.getCommit().getName());
+                }
+            }
         });
         thread2.setName("rfc");
         thread2.start();

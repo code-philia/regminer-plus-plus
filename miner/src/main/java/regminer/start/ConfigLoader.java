@@ -52,13 +52,14 @@ public class ConfigLoader {
         //###########################
         // 使用Eclipse发布release版本时候请解除注释
         //###########################
-		String path = System.getProperty("java.class.path");
+//		String path = System.getProperty("java.class.path");
+        String path = "D:\\repo\\miner_space\\repos\\regminer\\fastjson\\";
 		int firstIndex = path.lastIndexOf(System.getProperty("path.separator")) + 1;
 		int lastIndex = path.lastIndexOf(File.separator) + 1;
 		path = path.substring(firstIndex, lastIndex);
-		FileUtilx.log("env.pro " + path);
+//		FileUtilx.log("env.pro " + path);
 		pathx = path + File.separator + CONFIGPATH;
-		FileUtilx.log("env.pro " + pathx);
+//		FileUtilx.log("env.pro " + pathx);
         //#########################
         // release code end
         //#########################
