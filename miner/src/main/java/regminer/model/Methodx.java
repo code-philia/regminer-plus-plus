@@ -12,16 +12,10 @@ public class Methodx {
 	private int startLine;
 	private int stopLine;
 	private String simpleName;
-	private String filePath;
 	private MethodDeclaration methodDeclaration;
 
 	public Methodx(String signature) {
 		this.signature = signature;
-	}
-
-	public Methodx(String signature, String filePath) {
-		this.signature = signature;
-		this.filePath = filePath;
 	}
 
 	public Methodx(String signature, int startLine, int stopLine, String simpleName,
@@ -31,10 +25,6 @@ public class Methodx {
 		this.stopLine = stopLine;
 		this.simpleName = simpleName;
 		this.methodDeclaration = methodDeclaration;
-	}
-
-	public String getFilePath() {
-		return filePath;
 	}
 
 	public String getSignature() {
@@ -77,28 +67,4 @@ public class Methodx {
 		this.methodDeclaration = methodDeclaration;
 	}
 
-	@Override
-	public int hashCode() {
-		return (this.filePath + this.signature + this.startLine + this.stopLine).hashCode();
-	}
-
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) {
-			return true;
-		}
-
-		if (o == null) {
-			return false;
-		}
-
-		if (o instanceof Methodx) {
-			Methodx methodx = (Methodx) o;
-			return this.signature.equals(methodx.getSignature()) &&
-					this.filePath.equals(methodx.getFilePath()) &&
-					this.startLine == methodx.getStartLine() &&
-					this.stopLine == methodx.getStopLine();
-		}
-		return false;
-	}
 }

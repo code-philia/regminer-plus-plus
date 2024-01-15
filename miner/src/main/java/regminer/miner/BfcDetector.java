@@ -20,6 +20,7 @@ import regminer.model.*;
 import regminer.utils.FileUtilx;
 import regminer.utils.GitUtil;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -112,7 +113,7 @@ public abstract class BfcDetector {
         return potentialRFCs;
     }
 
-    private List<PotentialRFC> detectOnFilter(List<String> commitsFilter, Iterable<RevCommit> commits) throws Exception {
+    List<PotentialRFC> detectOnFilter(List<String> commitsFilter, Iterable<RevCommit> commits) throws Exception {
         List<PotentialRFC> potentialRFCs = new LinkedList<PotentialRFC>();
         // 定义需要记录的实验数据
         int countAll = 0;

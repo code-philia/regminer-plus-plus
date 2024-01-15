@@ -28,7 +28,8 @@ public class HMinerTest extends RegMinerTest {
     public void regressionTest() throws Exception {
         List<String> filter = new ArrayList<>();
         // if check rule test case
-        filter.add("13ae28e80ac17dea57cd299ae8b7a49b25ef35c9");
+//        filter.add("13ae28e80ac17dea57cd299ae8b7a49b25ef35c9");
+        filter.add("960fa3152d0b2e983522456937c9d47e8d24a7d9");
         BfcDetector pBFCDetector = new HeuristicBfcDetector(Miner.repo, Miner.git);
         Miner.pRFCs = null;
         Miner.pRFCs = (LinkedList<PotentialRFC>) pBFCDetector.detectPotentialBFC(filter);

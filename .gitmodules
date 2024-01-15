@@ -1,0 +1,4 @@
+[submodule "diff_tester"]
+	path = diff_tester
+	url = https://github.com/Javiier-pzk/diff_tester.git
+	branch = ref_regminer

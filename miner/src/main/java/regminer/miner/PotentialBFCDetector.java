@@ -76,5 +76,4 @@ public class PotentialBFCDetector extends BfcDetector {
             }
         }
     }
-
 }

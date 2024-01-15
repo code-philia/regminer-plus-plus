@@ -10,6 +10,7 @@ import com.github.javaparser.ast.stmt.Statement;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +20,12 @@ import java.util.Optional;
 public class JavaFileParser {
     List<ClassOrInterfaceDeclaration> classOrInterfaceDeclarationList;
     private String filePath;
+
+    public String getPackageName() {
+        return packageName;
+    }
+
+    private String packageName;
 
     public List<MethodDeclaration> getMethodDeclarations() {
         return methodDeclarations;
@@ -30,32 +37,32 @@ public class JavaFileParser {
 
     public JavaFileParser(String filePath) {
         this.filePath = filePath;
+        methodDeclarations = new ArrayList<>();
+        constructorDeclarations = new ArrayList<>();
     }
 
     List<MethodDeclaration> methodDeclarations;
     List<ConstructorDeclaration> constructorDeclarations;
 
     public boolean parse() {
-        Optional<CompilationUnit> result = null;
+        Optional<CompilationUnit> result;
         try {
             result = new JavaParser().parse(Paths.get(filePath)).getResult();
         } catch (IOException e) {
             e.printStackTrace();
             return false;
         }
-//       if (o instanceof com.github.javaparser.ParseResult) {
-//           ((com.github.javaparser.ParseResult<com.github.javaparser.ast.CompilationUnit>) o).getResult().ifPresent(r -> compilationUnit.set(r));
-//       } else {
-//           compilationUnit.set((com.github.javaparser.ast.CompilationUnit) o);
-//       }
         if (result.isEmpty()) {
             return false;
         }
         com.github.javaparser.ast.CompilationUnit compilationUnit = result.get();
+        if (compilationUnit.getPackageDeclaration().isPresent()) {
+            packageName = compilationUnit.getPackageDeclaration().get().getName().asString();
+        }
         classOrInterfaceDeclarationList = compilationUnit.findAll(ClassOrInterfaceDeclaration.class);
         for (ClassOrInterfaceDeclaration c : classOrInterfaceDeclarationList) {
-            methodDeclarations = c.findAll(MethodDeclaration.class);
-            constructorDeclarations = c.findAll(ConstructorDeclaration.class);
+            methodDeclarations.addAll(c.findAll(MethodDeclaration.class));
+            constructorDeclarations.addAll(c.findAll(ConstructorDeclaration.class));
         }
         return true;
     }

@@ -4,6 +4,7 @@
     <option name="originalFiles">
       <list>
         <option value="$PROJECT_DIR$/miner/pom.xml" />
+        <option value="$PROJECT_DIR$/diff_tester/pom.xml" />
       </list>
     </option>
   </component>

@@ -6,10 +6,12 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="diff_tester" />
         <module name="miner" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="diff_tester" target="8" />
       <module name="miner" target="11" />
     </bytecodeTargetLevel>
   </component>
