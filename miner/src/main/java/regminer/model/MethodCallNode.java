@@ -15,7 +15,18 @@ import java.util.Set;
 public class MethodCallNode {
     String methodName;
     String className;
+
+    public String getPackageName() {
+        return packageName;
+    }
+
     String packageName;
+
+    public String getOldFilePath() {
+        return oldFilePath;
+    }
+
+    String oldFilePath;
 
     public boolean getNotCalled() {
         return notCalled;
@@ -64,12 +75,13 @@ public class MethodCallNode {
     Set<MethodCallNode> callers;
     Set<MethodCallNode> rootCallers;
 
-    public MethodCallNode(String packageName, String filePath, MethodDeclaration methodDeclaration) {
+    public MethodCallNode(String packageName, String filePath, MethodDeclaration methodDeclaration, String oldFilePath) {
         this.methodName = methodDeclaration.getNameAsString();
         this.filePath = filePath;
         this.methodDeclaration = methodDeclaration;
         this.packageName = packageName;
         this.className = findClassName();
+        this.oldFilePath = oldFilePath;
         this.signature = generateSignature();
         callers = new HashSet<>();
         calls = new HashSet<>();

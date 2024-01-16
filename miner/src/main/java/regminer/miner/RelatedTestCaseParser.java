@@ -51,7 +51,7 @@ public class RelatedTestCaseParser  {
     public void parseTestCases(PotentialRFC pRFC) {
         File bfcDir = pRFC.fileMap.get(pRFC.getCommit().getName());
         // Prepare for no testcase in bfc but in range of (c~2,c^2)
-        if (pRFC.getTestcaseFrom() == PotentialRFC.TESTCASE_FROM_SEARCH) {
+        if (pRFC.getTestcaseFrom() == PotentialRFC.TESTCASE_FROM_SEARCH || pRFC.getTestcaseFrom() == PotentialRFC.TESTCASE_FROM_DIFF_TEST) {
             handlePotentialTestFile(pRFC.getPotentialTestCaseList(),bfcDir,pRFC);
         }
 

@@ -14,6 +14,7 @@ import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeS
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import com.tester.DifferentialTester;
 import com.tester.processor.MinerProcessor;
+import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
@@ -28,6 +29,7 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
 import regminer.ast.javaparser.JavaFileParser;
 import regminer.constant.Conf;
+import regminer.miner.migrate.BFCEvaluator;
 import regminer.model.*;
 
 import java.io.File;
@@ -111,39 +113,33 @@ public class HeuristicBfcDetector extends BfcDetector {
 //            pRFC.setTestcaseFrom(PotentialRFC.TESTCASE_FROM_SELF);
 //            potentialRFCs.add(pRFC);
 //        } else if (justNormalJavaFile(files)) {
-//				针对只标题只包含fix但是修改的文件路径中没有测试用例的提交
-//				我们将在(c-3,c+3) 的范围内检索可能的测试用例
-//				[TODO] songxuezhi
-            List<PotentialTestCase> pls = findTestCommit(commit);
             pRFC.setNormalJavaFiles(normalJavaFiles);
-//            if (pls != null && !pls.isEmpty()) {
-//                pRFC.setTestcaseFrom(PotentialRFC.TESTCASE_FROM_SEARCH);
-//                pRFC.setPotentialTestCaseList(pls);
-//                potentialRFCs.add(pRFC);
-//            } else {
-                // 使用启发式规则判断是否有可能为BFC，若有可能则尝试自动生成测试用例
-                // call diff_tester to create test file and generate test cases
-                MethodCallNode targetMethod = findEntranceMethodOfChanged(commit.getName(), normalJavaFiles);
-                if (targetMethod == null) {
-                    return;
-                }
-                // 调用diff_test生成用例
-                generateTestCases(commit, targetMethod, normalJavaFiles);
-                // if generate successfully, add this commit into potentialRFCs list
+            // 使用启发式规则判断是否有可能为BFC，若有可能则尝试自动生成测试用例
+            // call diff_tester to create test file and generate test cases
+            MethodCallNode targetMethod = findEntranceMethodOfChanged(commit.getName(), normalJavaFiles);
+            if (targetMethod == null) {
+                return;
+            }
+            // 调用diff_test生成用例
 
-                pRFC.setTestcaseFrom(PotentialRFC.TESTCASE_FROM_DIFF_TEST);
-                potentialRFCs.add(pRFC);
-//            }
+            // if generate successfully, add this commit into potentialRFCs list
+            List<PotentialTestCase> pls = generateTestCases(pRFC, commit, targetMethod, sourceFiles);
+            if (pls.isEmpty()) {
+                return;
+            }
+            pRFC.setPotentialTestCaseList(pls);
+            pRFC.setTestcaseFrom(PotentialRFC.TESTCASE_FROM_DIFF_TEST);
+            potentialRFCs.add(pRFC);
 //        }
     }
 
-
-    private void generateTestCases(RevCommit commit, MethodCallNode targetMethod, List<NormalFile> files) {
+    private List<PotentialTestCase> generateTestCases(PotentialRFC ptc, RevCommit commit, MethodCallNode targetMethod, List<SourceFile> sourceFiles) {
+        List<PotentialTestCase> cases = new ArrayList<>();
         Map<String, List<Integer>> suspiciousLines = new HashMap<String, List<Integer>>(2) {{
             put("working", Collections.singletonList(6));
             put("regression", Collections.singletonList(6));
         }};
-        String workingCommit = "";
+        String regressionCommit = "";
         try {
             RevCommit newRev1 = null;
             ObjectId newId1 = repo.resolve(commit.getName() + "^1");
@@ -152,18 +148,35 @@ public class HeuristicBfcDetector extends BfcDetector {
                 newRev1 = revWalk.parseCommit(newId1);
             }
             if (newRev1 == null) {
-                return;
+                return null;
             }
-            workingCommit = newRev1.getName();
+            regressionCommit = newRev1.getName();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        DifferentialTester dt = new DifferentialTester(targetMethod.getFilePath(),
-                targetMethod.getMethodName(),
-                suspiciousLines, new MinerProcessor.MinerInfo(
-                        Conf.META_PATH, workingCommit, commit.getName(), targetMethod.getFilePath(), targetMethod.getFilePath(), ""
-        ));
-        dt.run();
+        String testPath = Conf.TMP_FILE + File.separator+commit.getName()+File.separator;
+        String testFile = testPath+targetMethod.getMethodName() + "Test.java";
+        try {
+            File file = new File(testPath);
+            if (!file.exists()) {
+                file.mkdirs();
+            }
+            DifferentialTester dt = new DifferentialTester(targetMethod.getFilePath().substring(targetMethod.getFilePath().lastIndexOf(File.separator)), targetMethod.getMethodName() + "Test.java",
+                    targetMethod.getMethodName(),
+                    suspiciousLines, new MinerProcessor.MinerInfo(
+                    Conf.META_PATH, commit.getName(), regressionCommit, targetMethod.getFilePath(), targetMethod.getOldFilePath(), testFile, targetMethod.getPackageName()
+            ));
+            dt.run();
+            PotentialTestCase potentialTestCase = new PotentialTestCase(1);
+            potentialTestCase.fileMap.put(testFile, new File(testFile));
+            potentialTestCase.setTestFiles((List<TestFile>) new TestFile(testFile));
+            potentialTestCase.setSourceFiles(sourceFiles);
+            ptc.setTestCaseFiles((List<TestFile>) new TestFile(testFile));
+            cases.add(potentialTestCase);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return cases;
     }
 
 
@@ -179,7 +192,7 @@ public class HeuristicBfcDetector extends BfcDetector {
         for (NormalFile javaFile : javaFiles) {
             File file = new File(Conf.META_PATH, javaFile.getNewPath());
             if (javaFileParserMap.get(commit).get(file.getAbsolutePath()) == null) {
-                JavaFileParser parser = new JavaFileParser(file.getAbsolutePath());
+                JavaFileParser parser = new JavaFileParser(file.getAbsolutePath(), javaFile.getOldPath());
                 parser.parse();
                 javaFileParserMap.get(commit).put(file.getAbsolutePath(), parser);
             }
@@ -192,7 +205,7 @@ public class HeuristicBfcDetector extends BfcDetector {
             Object[] modifiedFunctionArray = modifiedFunction.toArray();
             return (MethodCallNode) modifiedFunctionArray[0];
         }
-        // 如果有多个方法修改
+        // 如果有多个方法修改，目前只返回一个
         return findEntranceFunction(commit, modifiedFunction);
     }
 
@@ -229,8 +242,8 @@ public class HeuristicBfcDetector extends BfcDetector {
                                 }
                                 MethodUsage methodUsage = JavaParserFacade.get(combinedTypeSolver).solveMethodAsUsage(methodCallExpr);
                                 MethodDeclaration md = ((JavaParserMethodDeclaration) methodUsage.getDeclaration()).getWrappedNode();
-                                MethodCallNode currentMethod = new MethodCallNode(parser.getPackageName(), filePath, methodDeclaration);
-                                MethodCallNode callee = new MethodCallNode(parser.getPackageName(), filePath, md);
+                                MethodCallNode currentMethod = new MethodCallNode(parser.getPackageName(), filePath, methodDeclaration, parser.getOldFilePath());
+                                MethodCallNode callee = new MethodCallNode(parser.getPackageName(), filePath, md, parser.getOldFilePath());
                                 callee.getCallers().add(currentMethod);
                                 currentMethod.getCalls().add(callee);
                                 if (callSet.contains(currentMethod)) {
@@ -284,7 +297,7 @@ public class HeuristicBfcDetector extends BfcDetector {
                 }
                 for (MethodDeclaration methodDeclaration : methods) {
                     if (line >= methodDeclaration.getBegin().get().line && line <= methodDeclaration.getEnd().get().line) {
-                        modifiedFunction.add(new MethodCallNode(parser.getPackageName(), filePath, methodDeclaration));
+                        modifiedFunction.add(new MethodCallNode(parser.getPackageName(), filePath, methodDeclaration, parser.getOldFilePath()));
                         break;
                     }
                 }
@@ -304,7 +317,7 @@ public class HeuristicBfcDetector extends BfcDetector {
         for (NormalFile normalFile : javaFiles) {
             File file = new File(Conf.META_PATH, normalFile.getNewPath());
                 // parse file to find if modified code hits the rules
-            JavaFileParser parser = new JavaFileParser(file.getAbsolutePath());
+            JavaFileParser parser = new JavaFileParser(file.getAbsolutePath(), normalFile.getOldPath());
             if (!parser.parse()) {
                 return false;
             }

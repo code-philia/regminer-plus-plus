@@ -21,6 +21,12 @@ public class JavaFileParser {
     List<ClassOrInterfaceDeclaration> classOrInterfaceDeclarationList;
     private String filePath;
 
+    public String getOldFilePath() {
+        return oldFilePath;
+    }
+
+    private String oldFilePath;
+
     public String getPackageName() {
         return packageName;
     }
@@ -35,8 +41,9 @@ public class JavaFileParser {
         return constructorDeclarations;
     }
 
-    public JavaFileParser(String filePath) {
+    public JavaFileParser(String filePath, String oldFilePath) {
         this.filePath = filePath;
+        this.oldFilePath = oldFilePath;
         methodDeclarations = new ArrayList<>();
         constructorDeclarations = new ArrayList<>();
     }
