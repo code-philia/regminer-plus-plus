@@ -26,6 +26,16 @@ public class PotentialRFC {
 
     private List<PotentialTestCase> potentialTestCaseList;
 
+    public String getTargetMethod() {
+        return targetMethod;
+    }
+
+    public void setTargetMethod(String targetMethod) {
+        this.targetMethod = targetMethod;
+    }
+
+    private String targetMethod;
+
 
     public List<PotentialTestCase> getPotentialTestCaseList() {
         return potentialTestCaseList;

@@ -13,7 +13,20 @@ import java.util.Set;
  * @author Song Rui
  */
 public class MethodCallNode {
+    public void setMethodName(String methodName) {
+        this.methodName = methodName;
+    }
+
+    public void setClassName(String className) {
+        this.className = className;
+    }
+
     String methodName;
+
+    public String getClassName() {
+        return className;
+    }
+
     String className;
 
     public String getPackageName() {

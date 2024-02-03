@@ -137,7 +137,7 @@ public abstract class BfcDetector {
      * @return
      * @throws Exception
      */
-    List<ChangedFile> getLastDiffFiles(RevCommit commit) throws Exception {
+    public List<ChangedFile> getLastDiffFiles(RevCommit commit) throws Exception {
         List<ChangedFile> files = new LinkedList<>();
         ObjectId id = commit.getTree().getId();
         ObjectId oldId;
@@ -216,7 +216,7 @@ public abstract class BfcDetector {
     /**
      * 获取所有普通文件
      */
-    List<NormalFile> getNormalJavaFiles(List<ChangedFile> files) {
+    public List<NormalFile> getNormalJavaFiles(List<ChangedFile> files) {
         List<NormalFile> normalJavaFiles = new LinkedList<>();
         for (ChangedFile file : files) {
             if (file instanceof NormalFile) {
@@ -226,7 +226,7 @@ public abstract class BfcDetector {
         return normalJavaFiles;
     }
 
-    List<SourceFile> getSourceFiles(List<ChangedFile> files) {
+    public List<SourceFile> getSourceFiles(List<ChangedFile> files) {
         List<SourceFile> sourceFiles = new LinkedList<>();
         for (ChangedFile file : files) {
             if (file.getNewPath().contains("pom.xml") || file.getNewPath().equals(Constant.NONE_PATH)) {
@@ -321,7 +321,7 @@ public abstract class BfcDetector {
 
     }
 
-    private void savePotentialTestFile(List<ChangedFile> files,RevCommit commit, PotentialTestCase potentialTestCase) {
+    public void savePotentialTestFile(List<ChangedFile> files, RevCommit commit, PotentialTestCase potentialTestCase) {
         for (ChangedFile changedFile : files) {
             String filePath = changedFile.getNewPath();
             if (!filePath.equals(Constant.NONE_PATH)) {

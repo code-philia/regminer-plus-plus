@@ -16,5 +16,10 @@
       <option name="name" value="JBoss Community repository" />
       <option name="url" value="https://repository.jboss.org/nexus/content/repositories/public/" />
     </remote-repository>
+    <remote-repository>
+      <option name="id" value="2cd3f48a-6284-4d84-a4f9-53bac69be682" />
+      <option name="name" value="2cd3f48a-6284-4d84-a4f9-53bac69be682" />
+      <option name="url" value="http://www.evosuite.org/m2" />
+    </remote-repository>
   </component>
 </project>

@@ -39,7 +39,7 @@ public class RelatedTestCaseParser  {
         while (iterator.hasNext()){
             ChangedFile changedFile = iterator.next();
             try {
-                FileUtils.copyToDirectory(potentialTestCase.fileMap.get(changedFile.getNewPath()),bfcDir);
+                FileUtils.copyToDirectory(potentialTestCase.fileMap.get(changedFile.getNewPath()), getNewDir(bfcDir, changedFile.getNewPath().replace("/", "\\")));
             } catch (Exception e){
                 iterator.remove();
                 e.printStackTrace();
@@ -47,11 +47,19 @@ public class RelatedTestCaseParser  {
         }
     }
 
+    public File getNewDir(File bfcDir, String subPath) {
+        int index = subPath.lastIndexOf(File.separator);
+        if (index < 0) {
+            return bfcDir;
+        }
+        return new File(bfcDir.getAbsoluteFile(), subPath.substring(0, index+1));
+    }
+
     // 现在每个测试文件被分为测试相关和测试文件。
     public void parseTestCases(PotentialRFC pRFC) {
         File bfcDir = pRFC.fileMap.get(pRFC.getCommit().getName());
         // Prepare for no testcase in bfc but in range of (c~2,c^2)
-        if (pRFC.getTestcaseFrom() == PotentialRFC.TESTCASE_FROM_SEARCH || pRFC.getTestcaseFrom() == PotentialRFC.TESTCASE_FROM_DIFF_TEST) {
+        if (testCasesGenerated(pRFC.getTestcaseFrom())) {
             handlePotentialTestFile(pRFC.getPotentialTestCaseList(),bfcDir,pRFC);
         }
 
@@ -74,11 +82,35 @@ public class RelatedTestCaseParser  {
             } else {
                 file.setType(Type.TEST_SUITE);
                 file.setQualityClassName(CompilationUtil.getQualityClassName(code));
-                Map<String, RelatedTestCase> methodMap = parse(file, code);
+                Map<String, RelatedTestCase> methodMap;
+                if (testCasesGenerated(pRFC.getTestcaseFrom())) {
+                    methodMap = findWithTarget(pRFC.getTargetMethod(), code);
+                } else {
+                    methodMap = parse(file, code);
+                }
                 file.setTestMethodMap(methodMap);
             }
         }
 //        System.out.println("prfc testcase file size(after parsing): " + pRFC.getTestCaseFiles().size());
+    }
+
+    private Map<String, RelatedTestCase> findWithTarget(String methodName, String code) {
+        List<Methodx> methodList = CompilationUtil.getAllMethod(code);
+        Map<String, RelatedTestCase> testCaseMap = new HashMap<>();
+        for (Methodx m : methodList) {
+            int start = m.getMethodDeclaration().getStartPosition();
+            if (code.substring(start, start + m.getMethodDeclaration().getLength()).contains(methodName)) {
+                RelatedTestCase relatedTestCase = new RelatedTestCase();
+                relatedTestCase.setMethod(m);
+                testCaseMap.put(methodName, relatedTestCase);
+                break;
+            }
+        }
+        return testCaseMap;
+    }
+
+    private boolean testCasesGenerated(int testcaseFrom) {
+        return testcaseFrom == PotentialRFC.TESTCASE_FROM_SEARCH || testcaseFrom == PotentialRFC.TESTCASE_FROM_DIFF_TEST;
     }
 
     private Map<String, RelatedTestCase> parse(TestFile file, String code) {

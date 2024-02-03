@@ -3,6 +3,8 @@ package regminer.miner;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.File;
+
 public class RelatedTestCaseParserTest {
     private RelatedTestCaseParser rTCParser = new RelatedTestCaseParser();
 
@@ -71,6 +73,14 @@ public class RelatedTestCaseParserTest {
                 "\n}";
         Assert.assertFalse(rTCParser.isTestSuite(code));
 
+    }
+
+
+    @Test
+    public void testGetNewDir() {
+        File dir = new File("D:\\repo\\miner_space\\repos\\regminer\\apache_commons-jexl\\cache\\0a2e94323a642cc224b1b97ce28e87aaf073408e\\0a2e94323a642cc224b1b97ce28e87aaf073408e\\bfc_f613f085-067a-452f-bccb-697d8379d37c\\meta");
+        String path = "src/changes/changes.xml";
+        File newDir = new RelatedTestCaseParser().getNewDir(dir, path.replace("/", "\\"));
     }
 
 }

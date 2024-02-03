@@ -14,7 +14,6 @@ import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeS
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import com.tester.DifferentialTester;
 import com.tester.processor.MinerProcessor;
-import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
@@ -29,7 +28,7 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
 import regminer.ast.javaparser.JavaFileParser;
 import regminer.constant.Conf;
-import regminer.miner.migrate.BFCEvaluator;
+import regminer.exec.Executor;
 import regminer.model.*;
 
 import java.io.File;
@@ -40,6 +39,8 @@ import regminer.utils.GitUtil;
 
 import java.io.IOException;
 import java.util.*;
+
+import static regminer.constant.Conf.PROJRCT_NAME;
 
 /**
  * @author Song Rui
@@ -58,6 +59,7 @@ public class HeuristicBfcDetector extends BfcDetector {
         javaFileParserMap = new HashMap<>();
         typeSolvers = new ArrayList<>(8);
         typeSolvers.add(new ReflectionTypeSolver());
+        gitUtil = new GitUtil(Conf.META_PATH);
     }
 
     @Override
@@ -65,7 +67,6 @@ public class HeuristicBfcDetector extends BfcDetector {
         List<PotentialRFC> potentialRFCs = new LinkedList<PotentialRFC>();
         // 定义需要记录的实验数据
         int countAll = 0;
-        gitUtil = new GitUtil(Conf.META_PATH);
         typeSolvers.add(new JavaParserTypeSolver(Conf.SRC_JAVA_PATH));
         combinedTypeSolver = new CombinedTypeSolver();
         typeSolvers.forEach(combinedTypeSolver::add);
@@ -113,18 +114,19 @@ public class HeuristicBfcDetector extends BfcDetector {
 //            pRFC.setTestcaseFrom(PotentialRFC.TESTCASE_FROM_SELF);
 //            potentialRFCs.add(pRFC);
 //        } else if (justNormalJavaFile(files)) {
-            pRFC.setNormalJavaFiles(normalJavaFiles);
             // 使用启发式规则判断是否有可能为BFC，若有可能则尝试自动生成测试用例
             // call diff_tester to create test file and generate test cases
             MethodCallNode targetMethod = findEntranceMethodOfChanged(commit.getName(), normalJavaFiles);
             if (targetMethod == null) {
                 return;
             }
-            // 调用diff_test生成用例
+        pRFC.setTargetMethod(targetMethod.getMethodName());
+        // if generate successfully, add this commit into potentialRFCs list
+//            List<PotentialTestCase> pls = generateTestCases(pRFC, commit, targetMethod, sourceFiles);
+        List<PotentialTestCase> pls = generateTestCasesWithEvosuite(pRFC, targetMethod, sourceFiles);
+//        savePotentialTestFile(files,commit, potentialTestCase);
 
-            // if generate successfully, add this commit into potentialRFCs list
-            List<PotentialTestCase> pls = generateTestCases(pRFC, commit, targetMethod, sourceFiles);
-            if (pls.isEmpty()) {
+        if (pls.isEmpty()) {
                 return;
             }
             pRFC.setPotentialTestCaseList(pls);
@@ -133,9 +135,26 @@ public class HeuristicBfcDetector extends BfcDetector {
 //        }
     }
 
-    private List<PotentialTestCase> generateTestCases(PotentialRFC ptc, RevCommit commit, MethodCallNode targetMethod, List<SourceFile> sourceFiles) {
+    public List<PotentialTestCase> generateTestCasesWithEvosuite(PotentialRFC ptc, MethodCallNode targetMethod, List<SourceFile> sourceFiles) {
+        gitUtil.checkout(ptc.getCommit().getName());
+        String cmd = "java -jar D:\\repo\\evosuite\\evosuite-1.0.6.jar -class " + targetMethod.getClassName() + " -projectCP " + Conf.META_PATH+"\\target\\classes";
+        String res = new Executor().exec(cmd);
+        String testFile = "";
         List<PotentialTestCase> cases = new ArrayList<>();
-        Map<String, List<Integer>> suspiciousLines = new HashMap<String, List<Integer>>(2) {{
+        PotentialTestCase potentialTestCase = new PotentialTestCase(1);
+        potentialTestCase.fileMap.put(testFile, new File(testFile));
+        List<TestFile> testFiles = new ArrayList<>(){};
+        testFiles.add(new TestFile(testFile));
+        potentialTestCase.setTestFiles(testFiles);
+        potentialTestCase.setSourceFiles(sourceFiles);
+        ptc.setTestCaseFiles(testFiles);
+        cases.add(potentialTestCase);
+        return cases;
+    }
+
+    public List<PotentialTestCase> generateTestCases(PotentialRFC ptc, RevCommit commit, MethodCallNode targetMethod, List<SourceFile> sourceFiles) {
+        List<PotentialTestCase> cases = new ArrayList<>();
+        Map<String, List<Integer>> suspiciousLines = new HashMap<>(2) {{
             put("working", Collections.singletonList(6));
             put("regression", Collections.singletonList(6));
         }};
@@ -154,17 +173,21 @@ public class HeuristicBfcDetector extends BfcDetector {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        String testPath = Conf.TMP_FILE + File.separator+commit.getName()+File.separator;
-        String testFile = testPath+targetMethod.getMethodName() + "Test.java";
+        String testPath = "temp" + File.separator + PROJRCT_NAME + File.separator + commit.getName() + File.separator;
+        String testFile = targetMethod.getMethodName() + "Test.java";
         try {
             File file = new File(testPath);
             if (!file.exists()) {
                 file.mkdirs();
             }
-            DifferentialTester dt = new DifferentialTester(targetMethod.getFilePath().substring(targetMethod.getFilePath().lastIndexOf(File.separator)), targetMethod.getMethodName() + "Test.java",
+            gitUtil.checkout(commit.getName());
+            String workingContent = FileUtilx.readContentFromFile(targetMethod.getFilePath());
+            gitUtil.checkout(regressionCommit);
+            String regressionContent = FileUtilx.readContentFromFile(targetMethod.getOldFilePath());
+            DifferentialTester dt = new DifferentialTester(targetMethod.getFilePath().substring(targetMethod.getFilePath().lastIndexOf(File.separator)), testFile,
                     targetMethod.getMethodName(),
                     suspiciousLines, new MinerProcessor.MinerInfo(
-                    Conf.META_PATH, commit.getName(), regressionCommit, targetMethod.getFilePath(), targetMethod.getOldFilePath(), testFile, targetMethod.getPackageName()
+                    Conf.META_PATH, commit.getName(), regressionCommit, targetMethod.getFilePath(), targetMethod.getOldFilePath(), testPath+testFile, targetMethod.getPackageName(), workingContent, regressionContent
             ));
             dt.run();
             PotentialTestCase potentialTestCase = new PotentialTestCase(1);
@@ -211,7 +234,6 @@ public class HeuristicBfcDetector extends BfcDetector {
 
 
     private MethodCallNode findEntranceFunction(String commit, Set<MethodCallNode> modifiedFunction) {
-        Set<MethodCallNode> commonRootCalls = new HashSet<>();
         Set<MethodCallNode> callSet = new HashSet<>();
         Set<String> modifiedFiles = new HashSet<>();
         // parse method calls
@@ -247,7 +269,12 @@ public class HeuristicBfcDetector extends BfcDetector {
                                 callee.getCallers().add(currentMethod);
                                 currentMethod.getCalls().add(callee);
                                 if (callSet.contains(currentMethod)) {
-                                    callSet.stream().filter(m -> m.equals(currentMethod)).forEach(m -> m.getCallers().add(callee));
+                                    callSet.stream().filter(m -> m.equals(currentMethod)).forEach(m -> m.getCalls().add(callee));
+                                } else {
+                                    callSet.add(currentMethod);
+                                }
+                                if (callSet.contains(callee)) {
+                                    callSet.stream().filter(m -> m.equals(callee)).forEach(m -> m.getCallers().add(currentMethod));
                                 } else {
                                     callSet.add(callee);
                                 }
@@ -259,26 +286,129 @@ public class HeuristicBfcDetector extends BfcDetector {
                 }
                 }
             }
-            // find common parent method
-            for (MethodCallNode methodCallNode : modifiedFunction) {
-                callSet.stream().filter(m -> m.equals(methodCallNode)).forEach(m -> m.getCallers()
-                        .forEach(c -> {
-                            if (modifiedFunction.contains(c)) {
-                                commonRootCalls.add(c);
-                            }
-                            methodCallNode.setNotCalled(false);
-                        }));
+        // 先找到根节点集合rootCallsMap，再两两寻找common parent, 注意寻找过程中会出现多头的情况，如
+        // L: f, i, e
+        // J: i, a
+        // rootCallsMap的key为root，只用于保证两两寻找的节点在同一棵树上
+        Map<MethodCallNode, List<MethodCallNode>> rootCallsMap = searchForRoots(modifiedFunction, callSet);
+        Set<MethodCallNode> commonRootCalls = new HashSet<>();
+        for (MethodCallNode methodCallNode : rootCallsMap.keySet()) {
+            if (rootCallsMap.get(methodCallNode).size() == 1) {
+                commonRootCalls.add(rootCallsMap.get(methodCallNode).get(0));
+                continue;
             }
-            if (commonRootCalls.isEmpty()) {
-                return null;
+            MethodCallNode tempNode = rootCallsMap.get(methodCallNode).get(0);
+            int size = rootCallsMap.get(methodCallNode).size();
+            for (int i = 1;i<size;i++) {
+                assert tempNode != null;
+                tempNode = findLowestCommonParent(tempNode, rootCallsMap.get(methodCallNode).get(i));
             }
-            List<MethodCallNode> roots = new ArrayList<>();
-            commonRootCalls.stream().filter(MethodCallNode::getNotCalled).forEach(roots::add);
-            if (roots.isEmpty()) {
-                return null;
-            }
-            return roots.get(0);
+            if (tempNode == null) {continue;}
+            commonRootCalls.add(tempNode);
         }
+        if (commonRootCalls.isEmpty()) {
+            return null;
+        }
+        return (MethodCallNode) commonRootCalls.toArray()[0];
+    }
+
+    private MethodCallNode findLowestCommonParent(MethodCallNode childA, MethodCallNode childB) {
+        if (childB == null || childA.getCallers().isEmpty()) {
+            return childA;
+        }
+        if (childB.getCallers().isEmpty()) {
+            return childB;
+        }
+        MethodCallNode p = confirmChild(childA, childB);
+        if (p != null) {
+            return p;
+        }
+        p = confirmChild(childB, childA);
+        if (p != null) {
+            return p;
+        }
+        // A and B has a common parent above both of them
+        for (MethodCallNode caller : childA.getCallers()) {
+            p = confirmChild(caller, childB);
+            if (p != null) {
+                return p;
+            }
+        }
+        return null;
+    }
+
+    private MethodCallNode confirmChild(MethodCallNode parent, MethodCallNode child) {
+        for (MethodCallNode c : parent.getCalls()) {
+            if (c.equals(child)) {
+                return parent;
+            }
+            MethodCallNode methodCallNode = confirmChild(c, child);
+            if (methodCallNode != null) {
+                return methodCallNode;
+            }
+        }
+        return null;
+    }
+
+    private void findCommonParents(Map<Integer, MethodCallNode> res, MethodCallNode root, MethodCallNode childA, MethodCallNode childB, int i, int low) {
+        for (MethodCallNode child : root.getCalls()) {
+            if (child.equals(childA) || child.equals(childB)) {
+                res.put(i, root);
+            }
+        }
+    }
+
+    private Map<MethodCallNode, List<MethodCallNode>> searchForRoots(Set<MethodCallNode> modifiedFunction, Set<MethodCallNode> callSet) {
+        // find roots, the key is modifiedFunction, value
+        Map<MethodCallNode, List<MethodCallNode>> rootCallsMap = new HashMap<>(modifiedFunction.size());
+        for (MethodCallNode m : modifiedFunction) {
+            callSet.stream().filter(c -> c.equals(m)).forEach(c -> findRoots(c, c, rootCallsMap, modifiedFunction));
+        }
+        // L: f, i, e
+        // D: a
+        // J: i, a
+        // 排除子树独立存在的情况, 可以排除子树D，只保留L和J
+        for (MethodCallNode methodCallNode : rootCallsMap.keySet()) {
+            for (MethodCallNode compareMethodCallNode : rootCallsMap.keySet()) {
+                if (compareMethodCallNode.equals(methodCallNode)) {
+                    continue;
+                }
+                if (rootCallsMap.get(methodCallNode).containsAll(rootCallsMap.get(compareMethodCallNode))) {
+                    rootCallsMap.remove(compareMethodCallNode);
+                }
+            }
+        }
+        return rootCallsMap;
+    }
+
+    /**
+     * for example, the rootCallsMap contains:
+     * L: f, i, e
+     * D: a
+     * J: i, a
+     * @param current the node to be search from
+     * @param leaf the modified function
+     * @param rootCallsMap the result, key is the leaf, value is the roots
+     * @param modifiedFunction the modified function set
+     */
+    private void findRoots(MethodCallNode current, MethodCallNode leaf, Map<MethodCallNode, List<MethodCallNode>> rootCallsMap, Set<MethodCallNode> modifiedFunction) {
+        if (current.getCallers().isEmpty()) {
+            if (rootCallsMap.containsKey(current)) {
+                rootCallsMap.get(current).add(leaf);
+            } else {
+                rootCallsMap.put(current, Collections.singletonList(leaf));
+            }
+            return;
+        }
+        Set<MethodCallNode> callers = current.getCallers();
+        for (MethodCallNode p : callers) {
+            if (modifiedFunction.contains(p)) {
+                modifiedFunction.remove(leaf);
+                break;
+            }
+            findRoots(p, leaf, rootCallsMap, modifiedFunction);
+        }
+    }
 
     private void findModifiedFunction(String commit, String filePath, Set<MethodCallNode> modifiedFunction, List<Edit> editList) {
         if (editList.isEmpty()) {

@@ -53,7 +53,7 @@ public class ConfigLoader {
         // 使用Eclipse发布release版本时候请解除注释
         //###########################
 //		String path = System.getProperty("java.class.path");
-        String path = "D:\\repo\\miner_space\\repos\\regminer\\fastjson\\";
+        String path = "D:\\repo\\miner_space\\repos\\regminer\\apache_commons-jexl\\";
 		int firstIndex = path.lastIndexOf(System.getProperty("path.separator")) + 1;
 		int lastIndex = path.lastIndexOf(File.separator) + 1;
 		path = path.substring(firstIndex, lastIndex);

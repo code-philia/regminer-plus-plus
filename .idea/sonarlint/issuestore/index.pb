@@ -10,3 +10,5 @@ E
 miner/pom.xml,3\7\37c30be6c96e35cb808842dc1e07fd401efffacd
 ]
 -miner/src/main/java/regminer/start/Miner.java,b\b\bb684c54cdeae92c8a2bed3f111158a207cbac1b
+;
+.gitmodules,7\4\7445606fbf8f3683cd42bdc54b05d7a0bc2dfc44
