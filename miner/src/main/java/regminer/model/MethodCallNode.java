@@ -5,6 +5,7 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -62,14 +63,13 @@ public class MethodCallNode {
     }
 
     public String getFilePath() {
-        return filePath;
+        return this.file.getAbsolutePath();
     }
 
     public MethodDeclaration getMethodDeclaration() {
         return methodDeclaration;
     }
 
-    String filePath;
     MethodDeclaration methodDeclaration;
 
     public Set<MethodCallNode> getCalls() {
@@ -88,11 +88,17 @@ public class MethodCallNode {
     Set<MethodCallNode> callers;
     Set<MethodCallNode> rootCallers;
 
-    public MethodCallNode(String packageName, String filePath, MethodDeclaration methodDeclaration, String oldFilePath) {
+    public File getFile() {
+        return file;
+    }
+
+    File file;
+
+    public MethodCallNode(String packageName, File file, MethodDeclaration methodDeclaration, String oldFilePath) {
         this.methodName = methodDeclaration.getNameAsString();
-        this.filePath = filePath;
         this.methodDeclaration = methodDeclaration;
         this.packageName = packageName;
+        this.file = file;
         this.className = findClassName();
         this.oldFilePath = oldFilePath;
         this.signature = generateSignature();
@@ -134,7 +140,7 @@ public class MethodCallNode {
 
     @Override
     public int hashCode() {
-        return (this.filePath + this.signature).hashCode();
+        return (this.getFilePath() + this.signature).hashCode();
     }
 
     @Override
@@ -150,7 +156,7 @@ public class MethodCallNode {
         if (o instanceof MethodCallNode) {
             MethodCallNode methodCallNode = (MethodCallNode) o;
             return this.signature.equals(methodCallNode.getSignature()) &&
-                    this.filePath.equals(methodCallNode.getFilePath());
+                    this.getFilePath().equals(methodCallNode.getFilePath());
         }
         return false;
     }

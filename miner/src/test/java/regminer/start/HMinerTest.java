@@ -20,6 +20,7 @@ import regminer.testsuite.RegMinerTest;
 import regminer.utils.FileUtilx;
 import regminer.utils.GitUtil;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -60,7 +61,7 @@ public class HMinerTest extends RegMinerTest {
         }
         String packageName = "com.alibaba.fastjson.support.spring";
         String filePath = "D:\\repo\\miner_space\\repos\\regminer\\fastjson\\meta\\src\\main\\java\\com\\alibaba\\fastjson\\support\\spring\\FastJsonHttpMessageConverter.java";
-        MethodCallNode targetMethod = new MethodCallNode(packageName, filePath, new MethodDeclaration(), filePath);
+        MethodCallNode targetMethod = new MethodCallNode(packageName, new File(filePath), new MethodDeclaration(), filePath);
         targetMethod.setMethodName("getType");
         List<PotentialTestCase> pls = pBFCDetector.generateTestCases(new PotentialRFC(newRev), newRev, targetMethod, new LinkedList<>());
         if (pls.isEmpty()) {
@@ -84,7 +85,7 @@ public class HMinerTest extends RegMinerTest {
         }
         String packageName = "org.apache.commons.jexl3.parser";
         String filePath = "D:\\repo\\miner_space\\repos\\regminer\\apache_commons-jexl\\meta\\src\\main\\java\\org\\apache\\commons\\jexl3\\parser\\JexlParser.java";
-        MethodCallNode targetMethod = new MethodCallNode(packageName, filePath, new MethodDeclaration(), filePath);
+        MethodCallNode targetMethod = new MethodCallNode(packageName, new File(filePath), new MethodDeclaration(), filePath);
         targetMethod.setMethodName("declarePragma");
         targetMethod.setClassName("org.apache.commons.jexl3.parser.JexlParser");
 //        List<PotentialTestCase> pls = pBFCDetector.generateTestCases(new PotentialRFC(newRev), newRev, targetMethod, new LinkedList<>());

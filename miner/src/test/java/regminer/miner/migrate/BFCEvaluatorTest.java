@@ -1,5 +1,6 @@
 package regminer.miner.migrate;
 
+import com.github.javaparser.ast.body.MethodDeclaration;
 import junit.framework.TestCase;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
@@ -54,6 +55,11 @@ public class BFCEvaluatorTest extends TestCase {
             PotentialRFC pRFC = new PotentialRFC(commit);
             pRFC.setNormalJavaFiles(normalJavaFiles);
             pRFC.setSourceFiles(sourceFiles);
+            String filePath = Conf.META_PATH+File.separator+"src\\main\\java\\org\\apache\\commons\\jexl3\\parser\\JexlParser.java";
+            MethodCallNode methodCallNode = new MethodCallNode("org.apache.commons.jexl3.parser", new File(filePath),
+                    new MethodDeclaration(), filePath);
+            methodCallNode.setClassName("org.apache.commons.jexl3.parser.JexlParser");
+            detector.generateTestCasesWithEvosuite(pRFC, methodCallNode, new ArrayList<>());
             List<PotentialTestCase> pls = new ArrayList<>();
             PotentialTestCase potentialTestCase = new PotentialTestCase(1);
             detector.savePotentialTestFile(files,commit, potentialTestCase);
@@ -70,10 +76,8 @@ public class BFCEvaluatorTest extends TestCase {
             pls.add(potentialTestCase);
             pRFC.setPotentialTestCaseList(pls);
             pRFC.setTestcaseFrom(PotentialRFC.TESTCASE_FROM_DIFF_TEST);
-
-            BFCEvaluator tm = new BFCEvaluator(Miner.repo);
-            ConcurrentLinkedQueue<PotentialRFC> linkedQueue = new ConcurrentLinkedQueue<>();
-            tm.evolute(pRFC);
+//            BFCEvaluator tm = new BFCEvaluator(Miner.repo);
+//            tm.evolute(pRFC);
         } catch (Exception e) {
 
         }

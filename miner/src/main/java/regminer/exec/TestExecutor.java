@@ -18,6 +18,8 @@ public class TestExecutor extends Executor {
         Process process = null;
         InputStreamReader inputStr = null;
         BufferedReader bufferReader = null;
+        StringBuilder sb = new StringBuilder();
+
         try {
             if (OS.contains(OS_WINDOWS)) {
                 pb.command("cmd.exe", "/c", cmd);
@@ -28,7 +30,6 @@ public class TestExecutor extends Executor {
             inputStr = new InputStreamReader(process.getInputStream(), "gbk");
             bufferReader = new BufferedReader(inputStr);
             String line;
-            StringBuilder sb = new StringBuilder();
             while ((line = bufferReader.readLine()) != null) {
                 line = line.toLowerCase();
                 sb.append(line + "\n");

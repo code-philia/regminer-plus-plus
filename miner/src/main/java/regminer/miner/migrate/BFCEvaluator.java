@@ -227,7 +227,8 @@ public class BFCEvaluator extends Migrator {
         // 遍历BFC测试文件中的每一个方法,并执行测试,测试失败即移除
         for (Iterator<Map.Entry<String, RelatedTestCase>> it = methodMap.entrySet().iterator(); it.hasNext(); ) {
             Map.Entry<String, RelatedTestCase> entry = it.next();
-            String testCase = qualityClassName + Conf.methodClassLinkSymbolForTest + entry.getKey().split("[(]")[0];
+//            String testCase = qualityClassName + Conf.methodClassLinkSymbolForTest + entry.getKey().split("[(]")[0];
+            String testCase = qualityClassName + Conf.methodClassLinkSymbolForTest + entry.getValue().getMethod().getSignature().split("[(]")[0];
             MigrateFailureType type = exec.execTestWithResult(Conf.testLine + testCase);
             if (type != MigrateFailureType.TESTSUCCESS) {
                 it.remove();

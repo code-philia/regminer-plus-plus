@@ -12,3 +12,7 @@ E
 -miner/src/main/java/regminer/start/Miner.java,b\b\bb684c54cdeae92c8a2bed3f111158a207cbac1b
 ;
 .gitmodules,7\4\7445606fbf8f3683cd42bdc54b05d7a0bc2dfc44
+}
+Mplatform/src/main/java/com/fudan/annotation/platform/backend/core/Runner.java,d\8\d82313d8603a4d2cb8b5feadcc7a0a1b4719ca63
+
+Oplatform/src/main/java/com/fudan/annotation/platform/backend/core/Executor.java,3\d\3d361a1031020358e63256531d5eebd0dbcd9953

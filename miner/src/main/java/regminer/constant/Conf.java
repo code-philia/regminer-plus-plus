@@ -30,6 +30,8 @@ public class Conf {
 	public static String RESULT_Path = PROJECT_PATH + File.separator + "regression.csv";
 
 	public static String SRC_JAVA_PATH = META_PATH + File.separator + "src" + File.separator + "main" + File.separator + "java";
+
+	public static String EVOSUITE_TESTS_PATH = META_PATH + File.separator + "evosuite";
 	// extra with clone
 	public static String CLONE_URL = "";
 
